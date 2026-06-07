@@ -291,7 +291,13 @@ test('10. Media Upload Validation (PDF vs non-PDF)', async () => {
   assert.strictEqual(pdfItem.type, 'file');
   assert.strictEqual(pdfItem.url, '/uploads/test-media-folder/integration-test.pdf');
 
-  // C. Upload invalid file (txt) - should fail
+  // C. Download the PDF and verify content/status
+  const downloadRes = await fetch(`${baseUrl}${pdfItem.url}`);
+  assert.strictEqual(downloadRes.status, 200);
+  const downloadText = await downloadRes.text();
+  assert.strictEqual(downloadText, '%PDF-1.4 dummy pdf content');
+
+  // D. Upload invalid file (txt) - should fail
   const txtFormData = new FormData();
   const txtBlob = new Blob(['dummy text content'], { type: 'text/plain' });
   txtFormData.append('path', 'test-media-folder');

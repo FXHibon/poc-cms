@@ -176,6 +176,7 @@ const loadSettings = async (req, res, next) => {
 // Static files for the Admin dashboard panel
 // Place it BEFORE the wildcard EJS routes, but AFTER express.static
 app.use('/admin', express.static(path.join(__dirname, '../public/admin')));
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 // ----------------------------------------------------
 // Public APIs
