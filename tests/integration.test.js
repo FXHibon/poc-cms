@@ -44,8 +44,6 @@ test('2. Public SSR rendering - Home Page', async () => {
   assert.match(text, /Welcome to NovaCMS/);
   assert.match(text, /class="main-header"/);
   assert.match(text, /<footer>/);
-  assert.match(text, /id="themeToggleBtn"/);
-  assert.match(text, /localStorage\.getItem\('site-theme'\)/);
 });
 
 test('3. Admin Login Failure (Invalid Credentials)', async () => {
@@ -200,11 +198,20 @@ test('8. Admin Settings Updates', async () => {
       site_name: 'NovaCMS Integration Test',
       site_description: 'Updated settings via automated test',
       site_footer: '© 2026 Test Suite Footer',
-      accent_color: '#10b981'
+      accent_color: '#10b981',
+      site_theme: 'cyberpunk'
     })
   });
 
   assert.strictEqual(settingsRes.status, 200);
+
+  // Verify updates retrieve from settings GET API
+  const getRes = await fetch(`${baseUrl}/api/admin/settings`, {
+    headers: { 'Cookie': authCookie }
+  });
+  assert.strictEqual(getRes.status, 200);
+  const settings = await getRes.json();
+  assert.strictEqual(settings.site_theme, 'cyberpunk');
   
   // Verify updates reflect on homepage rendering
   const homeRes = await fetch(`${baseUrl}/`);
@@ -212,6 +219,8 @@ test('8. Admin Settings Updates', async () => {
   assert.match(text, /NovaCMS Integration Test/);
   assert.match(text, /© 2026 Test Suite Footer/);
   assert.match(text, /--accent: #10b981/);
+  assert.match(text, /Share Tech Mono/);
+  assert.match(text, /linear-gradient\(rgba\(0, 240, 255, 0.02\) 1px/);
 });
 
 test('9. Media Folder Creation and Navigation', async () => {
@@ -345,3 +354,82 @@ test('11. Media Sandbox Directory Traversal Security', async () => {
   const testFolderItem = rootMedia.items.find(item => item.name === 'test-media-folder');
   assert.ok(!testFolderItem);
 });
+
+test('12. Fetch Available Folder Widgets list', async () => {
+  const res = await fetch(`${baseUrl}/api/admin/media/folders`, {
+    headers: { 'Cookie': authCookie }
+  });
+  assert.strictEqual(res.status, 200);
+  const folders = await res.json();
+  assert.ok(Array.isArray(folders));
+  // Should contain at least the root (represented by empty string)
+  assert.ok(folders.includes(''));
+});
+
+test('13. Page PDF Folder Widget Rendering (SSR)', async () => {
+  // A. Create a temporary folder
+  await fetch(`${baseUrl}/api/admin/media/folder`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': authCookie
+    },
+    body: JSON.stringify({ path: '', name: 'widget-test-folder' })
+  });
+
+  // B. Upload a test PDF to this folder
+  const pdfFormData = new FormData();
+  const pdfBlob = new Blob(['%PDF-1.4 dummy widget pdf content'], { type: 'application/pdf' });
+  pdfFormData.append('path', 'widget-test-folder');
+  pdfFormData.append('file', pdfBlob, 'widget-doc.pdf');
+
+  await fetch(`${baseUrl}/api/admin/media/upload`, {
+    method: 'POST',
+    headers: { 'Cookie': authCookie },
+    body: pdfFormData
+  });
+
+  // C. Create a page containing the folder widget html
+  const createRes = await fetch(`${baseUrl}/api/admin/pages`, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Cookie': authCookie
+    },
+    body: JSON.stringify({
+      title: 'Widget SSR Page',
+      slug: 'widget-ssr-page',
+      content: '<p>Before widget</p><div class="pdf-folder-widget" data-folder="widget-test-folder"></div><p>After widget</p>',
+      status: 'published'
+    })
+  });
+  assert.strictEqual(createRes.status, 201);
+  const newPage = await createRes.json();
+  const pageId = newPage.id;
+
+  // D. Render the page and check if PDF lists are generated
+  const renderRes = await fetch(`${baseUrl}/widget-ssr-page`);
+  assert.strictEqual(renderRes.status, 200);
+  const html = await renderRes.text();
+
+  assert.match(html, /class="pdf-public-widget"/);
+  assert.match(html, /Documents: widget-test-folder/);
+  assert.match(html, /widget-doc\.pdf/);
+  assert.match(html, /href="\/uploads\/widget-test-folder\/widget-doc\.pdf"/);
+
+  // E. Cleanup page and media
+  await fetch(`${baseUrl}/api/admin/pages/${pageId}`, {
+    method: 'DELETE',
+    headers: { 'Cookie': authCookie }
+  });
+
+  await fetch(`${baseUrl}/api/admin/media`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': authCookie
+    },
+    body: JSON.stringify({ path: 'widget-test-folder' })
+  });
+});
+

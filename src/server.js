@@ -28,6 +28,90 @@ const getSafePath = (relativePath) => {
   return resolvedPath;
 };
 
+// HTML escaping helper
+const escapeHtml = (string) => {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return String(string).replace(/[&<>"']/g, (m) => map[m]);
+};
+
+// Format bytes helper
+const formatBytes = (bytes, decimals = 2) => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+};
+
+// Parse content and replace folder widgets with actual PDF lists
+const renderPageContent = (content) => {
+  if (!content) return '';
+  
+  const widgetRegex = /<div\s+class=["']pdf-folder-widget["']\s+data-folder=["']([^"']*)["']>([\s\S]*?)<\/div>/gi;
+  
+  return content.replace(widgetRegex, (match, folderPath) => {
+    try {
+      const relativePath = folderPath;
+      const targetFolder = getSafePath(relativePath);
+
+      if (fs.existsSync(targetFolder) && fs.statSync(targetFolder).isDirectory()) {
+        const files = fs.readdirSync(targetFolder, { withFileTypes: true });
+        const pdfFiles = [];
+
+        for (const file of files) {
+          if (file.isFile() && path.extname(file.name).toLowerCase() === '.pdf') {
+            const itemPath = path.join(targetFolder, file.name);
+            const stats = fs.statSync(itemPath);
+            const relativeItemPath = path.relative(UPLOADS_DIR, itemPath).replace(/\\/g, '/');
+            pdfFiles.push({
+              name: file.name,
+              size: stats.size,
+              url: `/uploads/${relativeItemPath}`.replace(/\\/g, '/')
+            });
+          }
+        }
+
+        if (pdfFiles.length === 0) {
+          return `<div class="pdf-public-widget empty-widget"><div class="widget-icon">📁</div><p>No PDF files found in folder: <strong>${escapeHtml(relativePath || 'Root')}</strong></p></div>`;
+        }
+
+        return `
+          <div class="pdf-public-widget">
+            <h3 class="widget-title">📁 Documents: ${escapeHtml(relativePath || 'Root')}</h3>
+            <div class="pdf-files-list">
+              ${pdfFiles.map(file => `
+                <a href="${file.url}" target="_blank" class="pdf-file-link">
+                  <div class="pdf-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  </div>
+                  <div class="pdf-details">
+                    <span class="pdf-name">${escapeHtml(file.name)}</span>
+                    <span class="pdf-size">${formatBytes(file.size)}</span>
+                  </div>
+                  <div class="pdf-download-arrow">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.04A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+                  </div>
+                </a>
+              `).join('')}
+            </div>
+          </div>`;
+      } else {
+        return `<div class="pdf-public-widget error-widget">Folder not found: ${escapeHtml(relativePath)}</div>`;
+      }
+    } catch (err) {
+      console.error('Error rendering widget:', err);
+      return `<div class="pdf-public-widget error-widget">Error rendering folder widget</div>`;
+    }
+  });
+};
+
 // Middleware configuration
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -81,7 +165,8 @@ const loadSettings = async (req, res, next) => {
       site_name: 'NovaCMS',
       site_description: 'Modern simple CMS',
       site_footer: '© 2026 NovaCMS.',
-      accent_color: '#8b5cf6'
+      accent_color: '#8b5cf6',
+      site_theme: 'midnight-violet'
     };
     res.locals.menuPages = [];
     next();
@@ -277,7 +362,7 @@ app.get('/api/admin/settings', authMiddleware, async (req, res) => {
 });
 
 app.post('/api/admin/settings', authMiddleware, async (req, res) => {
-  const { site_name, site_description, site_footer, accent_color } = req.body;
+  const { site_name, site_description, site_footer, accent_color, site_theme } = req.body;
   
   if (!site_name || !accent_color) {
     return res.status(400).json({ error: 'Site name and Accent Color are required' });
@@ -288,7 +373,8 @@ app.post('/api/admin/settings', authMiddleware, async (req, res) => {
       db.query('INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2', ['site_name', site_name]),
       db.query('INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2', ['site_description', site_description || '']),
       db.query('INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2', ['site_footer', site_footer || '']),
-      db.query('INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2', ['accent_color', accent_color])
+      db.query('INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2', ['accent_color', accent_color]),
+      db.query('INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2', ['site_theme', site_theme || 'midnight-violet'])
     ];
 
     await Promise.all(queries);
@@ -400,6 +486,34 @@ app.get('/api/admin/media', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error('Error reading media directory:', err);
     res.status(400).json({ error: err.message });
+  }
+});
+
+// Get list of all folders recursively (for widget insertion)
+app.get('/api/admin/media/folders', authMiddleware, async (req, res) => {
+  try {
+    const getFoldersRecursive = (dir, list = []) => {
+      const files = fs.readdirSync(dir, { withFileTypes: true });
+      for (const file of files) {
+        if (file.isDirectory()) {
+          const fullPath = path.join(dir, file.name);
+          // Verify safe path against path traversal
+          getSafePath(path.relative(UPLOADS_DIR, fullPath));
+          const relativePath = path.relative(UPLOADS_DIR, fullPath).replace(/\\/g, '/');
+          list.push(relativePath);
+          getFoldersRecursive(fullPath, list);
+        }
+      }
+      return list;
+    };
+    
+    const folders = getFoldersRecursive(UPLOADS_DIR);
+    // Include root folder as empty string
+    folders.unshift('');
+    res.json(folders);
+  } catch (err) {
+    console.error('Error listing folders:', err);
+    res.status(500).json({ error: 'Failed to retrieve folders list' });
   }
 });
 
@@ -548,7 +662,9 @@ app.get('/', loadSettings, async (req, res) => {
         preview: false
       });
     }
-    res.render('page', { page: pageRes.rows[0], preview: false });
+    const page = pageRes.rows[0];
+    page.content = renderPageContent(page.content);
+    res.render('page', { page, preview: false });
   } catch (err) {
     console.error('Error fetching home page:', err);
     res.status(500).render('error', { title: 'Server Error', message: 'An internal server error occurred.' });
@@ -590,6 +706,7 @@ app.get('/:slug', loadSettings, async (req, res) => {
       }
     }
 
+    page.content = renderPageContent(page.content);
     res.render('page', { page, preview: page.status === 'draft' });
   } catch (err) {
     console.error('Error fetching page:', err);

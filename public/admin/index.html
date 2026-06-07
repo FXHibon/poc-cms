@@ -11,13 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="admin.css">
-  <script>
-    (function() {
-      const theme = localStorage.getItem('site-theme') || 
-                    (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-      document.documentElement.setAttribute('data-theme', theme);
-    })();
-  </script>
+
 </head>
 <body>
 
@@ -56,13 +50,7 @@
             Settings
           </a>
         </li>
-        <li>
-          <a class="sidebar-link" id="themeToggleBtn">
-            <svg class="sun-icon" style="display: none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-            <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-            <span id="themeToggleText">Theme: Dark</span>
-          </a>
-        </li>
+
       </ul>
       <div class="sidebar-footer">
         <button id="logoutBtn" class="logout-btn">
@@ -215,6 +203,68 @@
                 </div>
               </div>
 
+              <div class="form-group">
+                <label style="margin-bottom: 0.75rem; display: block;">Theme Selection</label>
+                <div class="theme-cards-grid">
+                  <label class="theme-card-option">
+                    <input type="radio" name="siteTheme" value="midnight-violet" checked class="theme-radio-hidden">
+                    <div class="theme-card-content midnight-violet-preview">
+                      <div class="theme-card-header">
+                        <div class="theme-preview-dots">
+                          <span style="background: #0b0f19;"></span>
+                          <span style="background: #8b5cf6;"></span>
+                          <span style="background: #ffffff;"></span>
+                        </div>
+                        <span class="theme-name">Midnight Violet</span>
+                      </div>
+                      <div class="theme-card-preview-body">
+                        <div class="preview-mini-glass">
+                          <span class="preview-text">Glassmorphism</span>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+
+                  <label class="theme-card-option">
+                    <input type="radio" name="siteTheme" value="cyberpunk" class="theme-radio-hidden">
+                    <div class="theme-card-content cyberpunk-preview">
+                      <div class="theme-card-header">
+                        <div class="theme-preview-dots">
+                          <span style="background: #0c0c0e;"></span>
+                          <span style="background: #ff0055;"></span>
+                          <span style="background: #00f0ff;"></span>
+                        </div>
+                        <span class="theme-name">Cyberpunk Neon</span>
+                      </div>
+                      <div class="theme-card-preview-body">
+                        <div class="preview-mini-cyber">
+                          <span class="preview-text">NEON GRID</span>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+
+                  <label class="theme-card-option">
+                    <input type="radio" name="siteTheme" value="emerald" class="theme-radio-hidden">
+                    <div class="theme-card-content emerald-preview">
+                      <div class="theme-card-header">
+                        <div class="theme-preview-dots">
+                          <span style="background: #030c08;"></span>
+                          <span style="background: #10b981;"></span>
+                          <span style="background: #ecfdf5;"></span>
+                        </div>
+                        <span class="theme-name">Emerald Aurora</span>
+                      </div>
+                      <div class="theme-card-preview-body">
+                        <div class="preview-mini-emerald">
+                          <span class="preview-text">Organic Moss</span>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
               <button type="submit" class="btn btn-primary">Save Site Settings</button>
             </form>
           </div>
@@ -285,7 +335,7 @@
   <!-- Create/Edit Page Dialog Modal (Native HTML5) -->
   <!-- MANDATORY: closedby="any" for light-dismiss (with click coordinate JS fallback) -->
   <dialog id="pageDialog" closedby="any" aria-labelledby="dialogTitle">
-    <div class="dialog-box">
+    <div class="dialog-box" style="max-width: 850px;">
       <div class="dialog-header">
         <h2 id="dialogTitle">Create New Page</h2>
         <button class="dialog-close" onclick="document.getElementById('pageDialog').close()">&times;</button>
@@ -294,28 +344,40 @@
       <form id="pageForm">
         <input type="hidden" id="editPageId" value="">
         
-        <div class="form-group">
-          <label for="pageTitle">Page Title</label>
-          <input type="text" id="pageTitle" required placeholder="e.g. My New Page">
-        </div>
+        <div class="dialog-grid">
+          <div class="dialog-main-col">
+            <div class="form-group">
+              <label for="pageTitle">Page Title</label>
+              <input type="text" id="pageTitle" required placeholder="e.g. My New Page">
+            </div>
 
-        <div class="form-group">
-          <label for="pageSlug">Slug (URL Endpoint)</label>
-          <input type="text" id="pageSlug" required placeholder="e.g. my-new-page" pattern="^[a-z0-9_-]+$">
-          <p style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem;">Only lowercase letters, numbers, hyphens, and underscores are allowed.</p>
-        </div>
+            <div class="form-group">
+              <label for="pageSlug">Slug (URL Endpoint)</label>
+              <input type="text" id="pageSlug" required placeholder="e.g. my-new-page" pattern="^[a-z0-9_-]+$">
+              <p style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem;">Only lowercase letters, numbers, hyphens, and underscores are allowed.</p>
+            </div>
 
-        <div class="form-group">
-          <label for="pageStatus">Status</label>
-          <select id="pageStatus">
-            <option value="draft">Draft (Visible to Admins only)</option>
-            <option value="published">Published (Visible to everyone)</option>
-          </select>
-        </div>
+            <div class="form-group">
+              <label for="pageStatus">Status</label>
+              <select id="pageStatus">
+                <option value="draft">Draft (Visible to Admins only)</option>
+                <option value="published">Published (Visible to everyone)</option>
+              </select>
+            </div>
 
-        <div class="form-group">
-          <label for="pageContent">Content (HTML allowed)</label>
-          <textarea id="pageContent" style="min-height: 200px;" required placeholder="<h1>Insert HTML or plaintext here...</h1>"></textarea>
+            <div class="form-group">
+              <label for="pageContent">Content (HTML allowed)</label>
+              <textarea id="pageContent" style="min-height: 250px;" required placeholder="<h1>Insert HTML or plaintext here...</h1>"></textarea>
+            </div>
+          </div>
+          
+          <div class="dialog-sidebar-col">
+            <label>PDF Folder Widgets</label>
+            <div class="sidebar-help-text">Drag folders below into the Content box, or click to insert at cursor.</div>
+            <div id="dialogFoldersList" class="dialog-folders-list">
+              <div class="folder-widget-placeholder">Loading folders...</div>
+            </div>
+          </div>
         </div>
 
         <div class="dialog-footer">

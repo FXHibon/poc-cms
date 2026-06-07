@@ -24,9 +24,6 @@ const app = {
     
     // 5. Initialize Dialog Polyfill/Fallback for Light-Dismiss
     this.initDialogDismiss();
-
-    // 6. Initialize Theme switch icons
-    this.initTheme();
   },
 
   // Check login authorization status
@@ -64,7 +61,16 @@ const app = {
       document.getElementById('accentColorPicker').value = accent;
       document.getElementById('accentColorText').value = accent;
 
-      // Dynamically apply accent color to the admin console theme
+      const theme = settings.site_theme || 'midnight-violet';
+      const themeRadios = document.getElementsByName('siteTheme');
+      themeRadios.forEach(radio => {
+        if (radio.value === theme) {
+          radio.checked = true;
+        }
+      });
+
+      // Dynamically apply theme and accent color to the admin console
+      this.applyTheme(theme);
       this.applyThemeAccent(accent);
     } catch (err) {
       this.showToast(err.message, 'error');
@@ -78,18 +84,20 @@ const app = {
     const site_description = document.getElementById('siteDescription').value.trim();
     const site_footer = document.getElementById('siteFooter').value.trim();
     const accent_color = document.getElementById('accentColorText').value.trim();
+    const site_theme = Array.from(document.getElementsByName('siteTheme')).find(r => r.checked)?.value || 'midnight-violet';
 
     try {
       const res = await fetch('/api/admin/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ site_name, site_description, site_footer, accent_color })
+        body: JSON.stringify({ site_name, site_description, site_footer, accent_color, site_theme })
       });
       const data = await res.json();
       
       if (!res.ok) throw new Error(data.error || 'Failed to update settings');
 
       this.showToast('Settings saved successfully!');
+      this.applyTheme(site_theme);
       this.applyThemeAccent(accent_color);
       
       // Update logo and navbar live in admin UI
@@ -97,6 +105,17 @@ const app = {
     } catch (err) {
       this.showToast(err.message, 'error');
     }
+  },
+
+  // Apply theme class to documentElement
+  applyTheme(theme) {
+    // Remove existing theme classes
+    document.documentElement.className = document.documentElement.className
+      .replace(/\btheme-\S+/g, '')
+      .trim();
+    
+    // Add new theme class
+    document.documentElement.classList.add(`theme-${theme}`);
   },
 
   // Apply theme accent color
@@ -235,7 +254,7 @@ const app = {
   },
 
   // Open Dialog Modal in "Create Mode"
-  openCreateDialog() {
+  async openCreateDialog() {
     const dialog = document.getElementById('pageDialog');
     document.getElementById('dialogTitle').textContent = 'Create New Page';
     document.getElementById('editPageId').value = '';
@@ -247,10 +266,11 @@ const app = {
     document.getElementById('pageStatus').value = 'draft';
 
     dialog.showModal();
+    await this.loadFolderWidgets();
   },
 
   // Open Dialog Modal in "Edit Mode"
-  openEditDialog(id) {
+  async openEditDialog(id) {
     const page = this.pages.find(p => p.id === id);
     if (!page) return;
 
@@ -264,6 +284,7 @@ const app = {
     document.getElementById('pageStatus').value = page.status;
 
     dialog.showModal();
+    await this.loadFolderWidgets();
   },
 
   // Save Page (Create or Update)
@@ -422,12 +443,23 @@ const app = {
     
     picker.addEventListener('input', (e) => {
       hexInput.value = e.target.value;
+      this.applyThemeAccent(e.target.value);
     });
     hexInput.addEventListener('input', (e) => {
       const val = e.target.value;
       if (/^#[A-Fa-f0-9]{6}$/.test(val)) {
         picker.value = val;
+        this.applyThemeAccent(val);
       }
+    });
+
+    // Theme selector real-time preview
+    document.getElementsByName('siteTheme').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          this.applyTheme(e.target.value);
+        }
+      });
     });
 
     // Auto-generate Slug from Title (Only for new pages, where edit ID is empty)
@@ -510,18 +542,7 @@ const app = {
       }
     });
 
-    // Theme toggle listener
-    const themeBtn = document.getElementById('themeToggleBtn');
-    if (themeBtn) {
-      themeBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const activeTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', activeTheme);
-        localStorage.setItem('site-theme', activeTheme);
-        this.initTheme();
-        this.showToast(`Theme switched to ${activeTheme}!`);
-      });
-    }
+
   },
 
   // Native Dialog backdrop clicks fallback (light-dismiss)
@@ -730,6 +751,67 @@ const app = {
     }
   },
 
+  // Load list of directories for page editor drag and drop / click insertion
+  async loadFolderWidgets() {
+    const container = document.getElementById('dialogFoldersList');
+    if (!container) return;
+    
+    container.innerHTML = '<div class="folder-widget-placeholder">Loading folders list...</div>';
+    
+    try {
+      const res = await fetch('/api/admin/media/folders');
+      if (!res.ok) throw new Error('Failed to retrieve folders');
+      const folders = await res.json();
+      
+      if (folders.length === 0) {
+        container.innerHTML = '<div class="folder-widget-placeholder">No folders found in Media Library. Create folders first to use them.</div>';
+        return;
+      }
+      
+      container.innerHTML = folders.map(folder => {
+        const displayLabel = folder || 'Root (All Uploads)';
+        return `
+          <div class="draggable-folder-item" draggable="true" data-folder="${this.escapeHtml(folder)}" title="Drag into Content or click to insert at cursor">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span class="folder-name-text">${this.escapeHtml(displayLabel)}</span>
+          </div>
+        `;
+      }).join('');
+      
+      // Bind event listeners for dragging and clicking
+      container.querySelectorAll('.draggable-folder-item').forEach(item => {
+        const folder = item.getAttribute('data-folder');
+        const insertText = `<div class="pdf-folder-widget" data-folder="${folder}">📁 [PDF Folder: ${folder || 'Root'}]</div>`;
+        
+        item.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', insertText);
+          item.classList.add('dragging');
+        });
+        
+        item.addEventListener('dragend', () => {
+          item.classList.remove('dragging');
+        });
+        
+        item.addEventListener('click', () => {
+          const textarea = document.getElementById('pageContent');
+          const startPos = textarea.selectionStart;
+          const endPos = textarea.selectionEnd;
+          const text = textarea.value;
+          
+          textarea.value = text.substring(0, startPos) + insertText + text.substring(endPos);
+          
+          textarea.focus();
+          textarea.selectionStart = textarea.selectionEnd = startPos + insertText.length;
+          
+          this.showToast(`Inserted widget for folder "${folder || 'Root'}"!`);
+        });
+      });
+    } catch (err) {
+      console.error(err);
+      container.innerHTML = `<div class="folder-widget-placeholder" style="color: var(--danger);">Failed to load folders: ${this.escapeHtml(err.message)}</div>`;
+    }
+  },
+
   // Format bytes helper
   formatBytes(bytes, decimals = 2) {
     if (bytes === 0) return '0 Bytes';
@@ -740,26 +822,7 @@ const app = {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   },
 
-  // Init Theme switches
-  initTheme() {
-    const btn = document.getElementById('themeToggleBtn');
-    if (btn) {
-      const sun = btn.querySelector('.sun-icon');
-      const moon = btn.querySelector('.moon-icon');
-      const text = document.getElementById('themeToggleText');
-      
-      const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-      if (theme === 'light') {
-        sun.style.display = 'block';
-        moon.style.display = 'none';
-        text.textContent = 'Theme: Light';
-      } else {
-        sun.style.display = 'none';
-        moon.style.display = 'block';
-        text.textContent = 'Theme: Dark';
-      }
-    }
-  },
+
 
   // Escape HTML helper to prevent XSS in toasts and recent listings
   escapeHtml(string) {

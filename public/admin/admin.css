@@ -28,18 +28,6 @@
   --sidebar-width: 260px;
 }
 
-:root[data-theme="light"] {
-  --bg: #f1f5f9;
-  --sidebar-bg: #ffffff;
-  --card-bg: rgba(255, 255, 255, 0.9);
-  --card-border: rgba(15, 23, 42, 0.08);
-  --input-bg: #ffffff;
-  --text: #0f172a;
-  --text-muted: #475569;
-  --accent-glow: rgba(139, 92, 246, 0.08);
-  --logo-start: #0f172a;
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -769,6 +757,81 @@ dialog::backdrop {
   font-weight: 600;
 }
 
+/* Dialog Two-Column Grid */
+.dialog-grid {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr;
+  gap: 1.5rem;
+  text-align: left;
+}
+@media (max-width: 768px) {
+  .dialog-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sidebar-help-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+.dialog-folders-list {
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.draggable-folder-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: grab;
+  user-select: none;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.draggable-folder-item:hover {
+  background: rgba(var(--accent-rgb), 0.06);
+  border-color: rgba(var(--accent-rgb), 0.25);
+}
+
+.draggable-folder-item:active {
+  cursor: grabbing;
+}
+
+.draggable-folder-item svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.draggable-folder-item .folder-name-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.folder-widget-placeholder {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
 /* Responsive Admin panel */
 @media (max-width: 900px) {
   .sidebar {
@@ -782,4 +845,179 @@ dialog::backdrop {
     max-width: 100%;
     padding: 1.5rem;
   }
+}
+
+/* Theme selection cards */
+.theme-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.theme-card-option {
+  cursor: pointer;
+  display: block;
+  position: relative;
+}
+
+.theme-radio-hidden {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.theme-card-content {
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 120px;
+  justify-content: space-between;
+  overflow: hidden;
+  position: relative;
+}
+
+.theme-card-option:hover .theme-card-content {
+  border-color: rgba(var(--accent-rgb), 0.4);
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-2px);
+}
+
+.theme-radio-hidden:checked + .theme-card-content {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.08);
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.theme-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.theme-preview-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.theme-preview-dots span {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.theme-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.theme-card-preview-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.preview-text {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.midnight-violet-preview .preview-mini-glass {
+  background: rgba(17, 24, 39, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: #8b5cf6;
+  backdrop-filter: blur(4px);
+}
+
+.cyberpunk-preview .preview-mini-cyber {
+  background: #0c0c0e;
+  border: 1px solid #ff0055;
+  padding: 4px 8px;
+  color: #00f0ff;
+  font-family: monospace;
+}
+
+.emerald-preview .preview-mini-emerald {
+  background: rgba(8, 22, 15, 0.7);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  border-radius: 8px;
+  padding: 4px 8px;
+  color: #10b981;
+}
+
+/* ---------------------------------------------------- */
+/* Theme Overrides for Admin Panel */
+/* ---------------------------------------------------- */
+
+/* Cyberpunk Theme admin overrides */
+:root.theme-cyberpunk {
+  --bg: #08080a;
+  --sidebar-bg: #0c0c0e;
+  --card-bg: #141416;
+  --card-border: rgba(0, 240, 255, 0.25);
+  --input-bg: #08080a;
+  --text: #f1f5f9;
+  --text-muted: #64748b;
+  --font: 'Share Tech Mono', monospace;
+  --logo-start: #00f0ff;
+  --bg-pattern: linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+}
+
+:root.theme-cyberpunk body {
+  background-size: 30px 30px;
+}
+
+:root.theme-cyberpunk .panel-card,
+:root.theme-cyberpunk .sidebar,
+:root.theme-cyberpunk .btn,
+:root.theme-cyberpunk input,
+:root.theme-cyberpunk textarea,
+:root.theme-cyberpunk select,
+:root.theme-cyberpunk dialog,
+:root.theme-cyberpunk .dialog-box {
+  border-radius: 0px !important;
+}
+
+:root.theme-cyberpunk .panel-card {
+  border: 1px solid var(--accent) !important;
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.1);
+}
+
+/* Emerald Theme admin overrides */
+:root.theme-emerald {
+  --bg: #030c08;
+  --sidebar-bg: #05160e;
+  --card-bg: rgba(8, 22, 15, 0.75);
+  --card-border: rgba(52, 211, 153, 0.15);
+  --input-bg: rgba(3, 12, 8, 0.8);
+  --text: #e6f4ea;
+  --text-muted: #8cd6a7;
+  --logo-start: #ffffff;
+  --bg-pattern: radial-gradient(circle at 20% 30%, rgba(16, 185, 129, 0.06) 0%, transparent 45%),
+                radial-gradient(circle at 80% 70%, rgba(52, 211, 153, 0.04) 0%, transparent 50%);
+}
+
+:root.theme-emerald .panel-card,
+:root.theme-emerald .dialog-box {
+  border-radius: 24px !important;
+}
+
+:root.theme-emerald .btn,
+:root.theme-emerald input,
+:root.theme-emerald textarea,
+:root.theme-emerald select {
+  border-radius: 12px !important;
 }

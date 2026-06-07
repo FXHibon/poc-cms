@@ -34,15 +34,16 @@ CREATE TABLE settings (
 INSERT INTO settings (key, value) VALUES
 ('site_name', 'NovaCMS'),
 ('site_description', 'A premium, modern proof-of-concept Content Management System.'),
-('site_footer', '© 2026 NovaCMS. Built with Antigravity.'),
-('accent_color', '#8b5cf6') -- Default violet accent
+('site_footer', '© 2026 NovaCMS.'),
+('accent_color', '#8b5cf6'), -- Default violet accent
+('site_theme', 'midnight-violet')
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
 -- Seed default home page
 INSERT INTO pages (slug, title, content, status) VALUES
 ('home', 'Welcome to NovaCMS', '<h1>Welcome to NovaCMS</h1><p>This is your brand new, server-side rendered home page. You can customize this content, create new pages, and manage settings in the administrator dashboard.</p><p>To access the admin panel, head over to <a href="/admin">/admin</a>.</p>', 'published'),
 ('about', 'About Us', '<h1>About Us</h1><p>NovaCMS is a lightweight CMS built as a proof of concept. It features a modern dark mode theme with elegant glassmorphism and a responsive administration dashboard.</p>', 'published')
-ON CONFLICT (slug) DO UPDATE SET 
+ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
     content = EXCLUDED.content,
     status = EXCLUDED.status;

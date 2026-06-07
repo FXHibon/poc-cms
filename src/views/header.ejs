@@ -9,18 +9,50 @@
   <!-- Premium Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   
-  <script>
-    // Blocking theme initialization script to prevent dark flash on light mode
-    (function() {
-      const theme = localStorage.getItem('site-theme') || 
-                    (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-      document.documentElement.setAttribute('data-theme', theme);
-    })();
-  </script>
-
   <style>
+    <% if (settings.site_theme === 'cyberpunk') { %>
+    :root {
+      --bg: #08080a;
+      --card-bg: rgba(20, 20, 25, 0.85);
+      --card-border: rgba(0, 240, 255, 0.25);
+      --text: #f1f5f9;
+      --text-muted: #64748b;
+      --accent: <%= settings.accent_color || '#ff0055' %>;
+      --accent-rgb: 255, 0, 85;
+      --glow: rgba(255, 0, 85, 0.2);
+      --font: 'Share Tech Mono', monospace;
+      --logo-start: #00f0ff;
+      --heading-color: #00f0ff;
+      --text-hover: #ffffff;
+      --header-bg: rgba(8, 8, 10, 0.85);
+      --btn-bg: rgba(0, 240, 255, 0.05);
+      --shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+      --bg-pattern: linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+    }
+    <% } else if (settings.site_theme === 'emerald') { %>
+    :root {
+      --bg: #030c08;
+      --card-bg: rgba(8, 22, 15, 0.7);
+      --card-border: rgba(52, 211, 153, 0.12);
+      --text: #e6f4ea;
+      --text-muted: #8cd6a7;
+      --accent: <%= settings.accent_color || '#10b981' %>;
+      --accent-rgb: 16, 185, 129;
+      --glow: rgba(16, 185, 129, 0.2);
+      --font: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --logo-start: #ffffff;
+      --heading-color: #34d399;
+      --text-hover: #6ee7b7;
+      --header-bg: rgba(3, 12, 8, 0.75);
+      --btn-bg: rgba(16, 185, 129, 0.08);
+      --shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      --bg-pattern: radial-gradient(circle at 20% 30%, rgba(16, 185, 129, 0.06) 0%, transparent 45%),
+                    radial-gradient(circle at 80% 70%, rgba(52, 211, 153, 0.04) 0%, transparent 50%);
+    }
+    <% } else { %>
     :root {
       --bg: #0b0f19;
       --card-bg: rgba(17, 24, 39, 0.65);
@@ -37,22 +69,10 @@
       --header-bg: rgba(11, 15, 25, 0.7);
       --btn-bg: rgba(255, 255, 255, 0.08);
       --shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      --bg-pattern: radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.04) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
     }
-
-    :root[data-theme="light"] {
-      --bg: #f8fafc;
-      --card-bg: rgba(255, 255, 255, 0.85);
-      --card-border: rgba(15, 23, 42, 0.08);
-      --text: #0f172a;
-      --text-muted: #475569;
-      --glow: rgba(139, 92, 246, 0.1);
-      --logo-start: #0f172a;
-      --heading-color: #0f172a;
-      --text-hover: #0f172a;
-      --header-bg: rgba(248, 250, 252, 0.8);
-      --btn-bg: rgba(15, 23, 42, 0.05);
-      --shadow: 0 20px 40px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.02);
-    }
+    <% } %>
 
     * {
       box-sizing: border-box;
@@ -70,11 +90,41 @@
       flex-direction: column;
       overflow-x: hidden;
       /* Background pattern */
-      background-image: 
-        radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.04) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
+      background-image: var(--bg-pattern);
+      background-size: <%= settings.site_theme === 'cyberpunk' ? '30px 30px' : 'auto' %>;
       background-attachment: fixed;
     }
+
+    /* Theme specific structural overrides */
+    <% if (settings.site_theme === 'cyberpunk') { %>
+      .content-card, .main-header, .admin-btn, .pdf-file-link, .back-btn, .pdf-public-widget {
+        border-radius: 0px !important;
+      }
+      .content-card {
+        border: 2px solid var(--accent) !important;
+        box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.2), inset 0 0 15px rgba(var(--accent-rgb), 0.1) !important;
+      }
+      .pdf-file-link {
+        border: 1px solid var(--accent) !important;
+      }
+      .logo {
+        text-shadow: 0 0 8px rgba(var(--accent-rgb), 0.6);
+      }
+      .admin-btn:hover {
+        box-shadow: 0 0 15px var(--accent) !important;
+      }
+    <% } else if (settings.site_theme === 'emerald') { %>
+      .content-card {
+        border-radius: 28px !important;
+      }
+      .admin-btn, .pdf-file-link, .back-btn, .pdf-public-widget {
+        border-radius: 14px !important;
+      }
+      .content-card::before {
+        height: 6px !important;
+        border-radius: 28px 28px 0 0 !important;
+      }
+    <% } %>
 
     /* Transparent Sticky Nav Bar */
     .main-header {
@@ -353,11 +403,113 @@
         font-size: 1.8rem;
       }
     }
+
+    /* PDF Folder Widget Styling */
+    .pdf-public-widget {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    .pdf-public-widget.empty-widget {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+    }
+    .widget-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .widget-title {
+      font-size: 1.2rem !important;
+      margin: 0 0 1.25rem 0 !important;
+      font-weight: 600;
+      color: var(--heading-color);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .pdf-files-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .pdf-file-link {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      text-decoration: none !important;
+      color: var(--text) !important;
+      transition: all 0.2s ease;
+    }
+
+    .pdf-file-link:hover {
+      background: rgba(var(--accent-rgb), 0.06);
+      border-color: rgba(var(--accent-rgb), 0.3);
+      transform: translateY(-1px);
+    }
+    .pdf-icon {
+      color: #ef4444;
+      margin-right: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .pdf-icon svg {
+      stroke: currentColor;
+    }
+    .pdf-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+    .pdf-name {
+      font-weight: 500;
+      font-size: 0.95rem;
+      word-break: break-all;
+      color: var(--text);
+    }
+    .pdf-size {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.1rem;
+    }
+    .pdf-download-arrow {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 1rem;
+      transition: color 0.2s ease;
+    }
+    .pdf-file-link:hover .pdf-download-arrow {
+      color: var(--accent);
+    }
+    .pdf-public-widget.error-widget {
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      background: rgba(239, 68, 68, 0.05);
+      color: #f87171;
+      padding: 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin: 1.5rem 0;
+    }
   </style>
   <script>
     // Convert hex accent color to RGB to update the glow dynamic styling variable
     document.addEventListener("DOMContentLoaded", () => {
-      const hex = "<%= settings.accent_color || '#8b5cf6' %>";
+      let hex = "<%= settings.accent_color || '' %>";
+      if (!hex) {
+        const theme = "<%= settings.site_theme || 'midnight-violet' %>";
+        hex = theme === "cyberpunk" ? "#ff0055" : (theme === "emerald" ? "#10b981" : "#8b5cf6");
+      }
       let r = 139, g = 92, b = 246; // default fallback
       if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
         let c = hex.substring(1).split('');
@@ -371,33 +523,6 @@
       }
       document.documentElement.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
       document.documentElement.style.setProperty('--glow', `rgba(${r}, ${g}, ${b}, 0.2)`);
-
-      // Toggle theme handler
-      const btn = document.getElementById('themeToggleBtn');
-      if (btn) {
-        const sun = btn.querySelector('.sun-icon');
-        const moon = btn.querySelector('.moon-icon');
-        
-        const updateToggleIcons = (theme) => {
-          if (theme === 'light') {
-            sun.style.display = 'block';
-            moon.style.display = 'none';
-          } else {
-            sun.style.display = 'none';
-            moon.style.display = 'block';
-          }
-        };
-
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-        updateToggleIcons(currentTheme);
-
-        btn.addEventListener('click', () => {
-          const activeTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-          document.documentElement.setAttribute('data-theme', activeTheme);
-          localStorage.setItem('site-theme', activeTheme);
-          updateToggleIcons(activeTheme);
-        });
-      }
     });
   </script>
 </head>
@@ -413,10 +538,7 @@
             <a href="/<%= item.slug %>" class="nav-link <%= page.slug === item.slug ? 'active' : '' %>"><%= item.title %></a>
           <% } %>
         <% }); %>
-        <button id="themeToggleBtn" class="admin-btn" title="Toggle Theme" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; border-radius: 50px;">
-          <svg class="sun-icon" style="display: none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        </button>
+
         <a href="/admin" class="admin-btn">Admin Panel</a>
       </nav>
     </div>
