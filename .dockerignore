@@ -1,0 +1,111 @@
+# ==========================================
+# Version Control
+# ==========================================
+.git
+.github
+.gitignore
+.gitattributes
+
+
+# ==========================================
+# Docker Configs
+# ==========================================
+Dockerfile*
+docker-compose*
+.dockerignore
+
+
+# ==========================================
+# Operating System & Temp Files
+# ==========================================
+# macOS
+**/.DS_Store
+**/.AppleDouble
+**/.LSOverride
+**/Icon\r
+**/._*
+
+# Windows
+**/Thumbs.db
+**/ehthumbs.db
+**/Desktop.ini
+
+# Linux
+**/*~
+**/*.swp
+
+
+# ==========================================
+# IDEs & Editors
+# ==========================================
+.idea/
+.vscode/
+*.iml
+*.code-workspace
+
+
+# ==========================================
+# Environment Variables & Secrets (CRITICAL)
+# ==========================================
+.env
+.env.local
+.env.*
+*.pem
+*.key
+*.cert
+*.pfx
+
+
+# ==========================================
+# Node.js / Frontend Build & Logs
+# ==========================================
+# NEVER copy node_modules from the host to the docker build context
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.svelte-kit/
+.cache/
+.npm/
+.eslintcache
+.turbo/
+.vercel/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+
+# ==========================================
+# Other Languages (Python / Go / etc.)
+# ==========================================
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+
+# Go
+bin/
+/debug
+
+
+# ==========================================
+# Miscellaneous
+# ==========================================
+README.md
+LICENSE
+docs/

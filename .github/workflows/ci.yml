@@ -1,0 +1,22 @@
+name: docker-build-push
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+# Limit permissions to what is needed
+permissions:
+  contents: read
+
+jobs:
+  docker-build:
+    uses: FXHibon/iac/.github/workflows/docker-build-push.yml@master
+    secrets:
+      dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+      dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}

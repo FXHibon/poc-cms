@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # The application being tested
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Set the test environment variables
+    environment:
+      - NODE_ENV=test
+      - DATABASE_URL=postgres://test_user:test_password@db:5432/test_db
+      - REDIS_URL=redis://redis:6379/0
+      # Add other config overrides here
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # Command to run tests inside the container and exit
+    command: npm test # Or: go test -v ./... or pytest
+
+  # PostgreSQL database dependency
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=test_user
+      - POSTGRES_PASSWORD=test_password
+      - POSTGRES_DB=test_db
+    ports:
+      - "5432:5432" # Exposed to host for debugging if needed
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d test_db"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    # Use anonymous volumes for tests to avoid cluttering local disk
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # Redis caching dependency
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:
