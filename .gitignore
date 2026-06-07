@@ -137,3 +137,8 @@ docker-compose.override.yml
 /*.db
 /*.sqlite
 /data/
+
+# Ignore user uploads in public/uploads
+/public/uploads/
+!/public/uploads/.gitkeep
+

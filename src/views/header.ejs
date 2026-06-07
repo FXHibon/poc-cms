@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= page.title %> | <%= settings.site_name || 'NovaCMS' %></title>
+  <meta name="description" content="<%= settings.site_description || 'A simple premium CMS' %>">
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    // Blocking theme initialization script to prevent dark flash on light mode
+    (function() {
+      const theme = localStorage.getItem('site-theme') || 
+                    (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(17, 24, 39, 0.65);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent: <%= settings.accent_color || '#8b5cf6' %>;
+      --accent-rgb: 139, 92, 246; /* Default RGB */
+      --glow: rgba(139, 92, 246, 0.15);
+      --font: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --logo-start: #ffffff;
+      --heading-color: #ffffff;
+      --text-hover: #ffffff;
+      --header-bg: rgba(11, 15, 25, 0.7);
+      --btn-bg: rgba(255, 255, 255, 0.08);
+      --shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    :root[data-theme="light"] {
+      --bg: #f8fafc;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --card-border: rgba(15, 23, 42, 0.08);
+      --text: #0f172a;
+      --text-muted: #475569;
+      --glow: rgba(139, 92, 246, 0.1);
+      --logo-start: #0f172a;
+      --heading-color: #0f172a;
+      --text-hover: #0f172a;
+      --header-bg: rgba(248, 250, 252, 0.8);
+      --btn-bg: rgba(15, 23, 42, 0.05);
+      --shadow: 0 20px 40px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.02);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      /* Background pattern */
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.04) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    /* Transparent Sticky Nav Bar */
+    .main-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--header-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 2rem;
+    }
+
+    .nav-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-decoration: none;
+      color: var(--text);
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--logo-start) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: opacity 0.2s ease;
+    }
+
+    .logo:hover {
+      opacity: 0.9;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      position: relative;
+      padding: 0.25rem 0;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--text);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background-color: var(--accent);
+      transition: width 0.2s ease;
+    }
+
+    .nav-link:hover::after, .nav-link.active::after {
+      width: 100%;
+    }
+
+    .admin-btn {
+      background: var(--btn-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .admin-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 15px var(--glow);
+      transform: translateY(-1px);
+    }
+
+    /* Main Content */
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 900px;
+      margin: 3rem auto;
+      padding: 0 2rem;
+      animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Premium Container Card */
+    .content-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 3rem;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .content-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      border-radius: 20px 20px 0 0;
+    }
+
+    /* Preview Warning Pill */
+    .preview-badge {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 1.5rem;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    /* EJS dynamic article layouts */
+    .article-header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 1.5rem;
+    }
+
+    .article-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--heading-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .article-meta {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .article-content {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .article-content h1, .article-content h2, .article-content h3 {
+      color: var(--heading-color);
+      margin: 2rem 0 1rem 0;
+      font-weight: 600;
+    }
+
+    .article-content h1 { font-size: 2rem; }
+    .article-content h2 { font-size: 1.6rem; }
+    .article-content h3 { font-size: 1.3rem; }
+
+    .article-content p {
+      margin-bottom: 1.5rem;
+    }
+
+    .article-content a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .article-content a:hover {
+      text-decoration: underline;
+      color: var(--text-hover);
+    }
+
+    .article-content ul, .article-content ol {
+      margin-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .article-content li {
+      margin-bottom: 0.5rem;
+    }
+
+    /* Error styles */
+    .error-container {
+      text-align: center;
+      padding: 2rem 0;
+    }
+
+    .error-code {
+      font-size: 6rem;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, #ef4444 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1.5rem;
+    }
+
+    .error-message {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .back-btn {
+      display: inline-block;
+      background: var(--accent);
+      color: #ffffff;
+      text-decoration: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+      box-shadow: 0 0 15px var(--glow);
+      transform: translateY(-1px);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.9; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .main-header {
+        padding: 1rem;
+      }
+      .nav-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+      }
+      .content-card {
+        padding: 1.5rem;
+      }
+      .article-title {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+  <script>
+    // Convert hex accent color to RGB to update the glow dynamic styling variable
+    document.addEventListener("DOMContentLoaded", () => {
+      const hex = "<%= settings.accent_color || '#8b5cf6' %>";
+      let r = 139, g = 92, b = 246; // default fallback
+      if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+        let c = hex.substring(1).split('');
+        if(c.length === 3) {
+          c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+        }
+        c = '0x' + c.join('');
+        r = (c>>16)&255;
+        g = (c>>8)&255;
+        b = c&255;
+      }
+      document.documentElement.style.setProperty('--accent-rgb', `${r}, ${g}, ${b}`);
+      document.documentElement.style.setProperty('--glow', `rgba(${r}, ${g}, ${b}, 0.2)`);
+
+      // Toggle theme handler
+      const btn = document.getElementById('themeToggleBtn');
+      if (btn) {
+        const sun = btn.querySelector('.sun-icon');
+        const moon = btn.querySelector('.moon-icon');
+        
+        const updateToggleIcons = (theme) => {
+          if (theme === 'light') {
+            sun.style.display = 'block';
+            moon.style.display = 'none';
+          } else {
+            sun.style.display = 'none';
+            moon.style.display = 'block';
+          }
+        };
+
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        updateToggleIcons(currentTheme);
+
+        btn.addEventListener('click', () => {
+          const activeTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', activeTheme);
+          localStorage.setItem('site-theme', activeTheme);
+          updateToggleIcons(activeTheme);
+        });
+      }
+    });
+  </script>
+</head>
+<body>
+
+  <header class="main-header">
+    <div class="nav-container">
+      <a href="/" class="logo"><%= settings.site_name || 'NovaCMS' %></a>
+      <nav>
+        <a href="/" class="nav-link <%= page.slug === 'home' ? 'active' : '' %>">Home</a>
+        <% menuPages.forEach(function(item) { %>
+          <% if (item.slug !== 'home') { %>
+            <a href="/<%= item.slug %>" class="nav-link <%= page.slug === item.slug ? 'active' : '' %>"><%= item.title %></a>
+          <% } %>
+        <% }); %>
+        <button id="themeToggleBtn" class="admin-btn" title="Toggle Theme" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; border-radius: 50px;">
+          <svg class="sun-icon" style="display: none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <a href="/admin" class="admin-btn">Admin Panel</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="content-card">

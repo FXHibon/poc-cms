@@ -1,0 +1,33 @@
+services:
+  # The web application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/novacms
+      - JWT_SECRET=novacms-super-secret-development-key-987654
+    depends_on:
+      db:
+        condition: service_healthy
+    # Auto-initialize database and run with hot-reloading for development
+    command: sh -c "npm run init-db && npm run dev"
+
+  # The PostgreSQL database
+  db:
+    image: postgres:18-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=novacms
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d novacms" ]
+      interval: 3s
+      timeout: 3s
+      retries: 10
