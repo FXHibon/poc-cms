@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= page.title %> | <%= settings.site_name || 'NovaCMS' %></title>
+  <title><%= locals.page ? page.title : (locals.title || 'Error') %> | <%= settings.site_name || 'NovaCMS' %></title>
   <meta name="description" content="<%= settings.site_description || 'A simple premium CMS' %>">
   
   <!-- Premium Fonts -->
@@ -532,10 +532,10 @@
     <div class="nav-container">
       <a href="/" class="logo"><%= settings.site_name || 'NovaCMS' %></a>
       <nav>
-        <a href="/" class="nav-link <%= page.slug === 'home' ? 'active' : '' %>">Home</a>
+        <a href="/" class="nav-link <%= (locals.page && page.slug === 'home') ? 'active' : '' %>">Home</a>
         <% menuPages.forEach(function(item) { %>
           <% if (item.slug !== 'home') { %>
-            <a href="/<%= item.slug %>" class="nav-link <%= page.slug === item.slug ? 'active' : '' %>"><%= item.title %></a>
+            <a href="/<%= item.slug %>" class="nav-link <%= (locals.page && page.slug === item.slug) ? 'active' : '' %>"><%= item.title %></a>
           <% } %>
         <% }); %>
 

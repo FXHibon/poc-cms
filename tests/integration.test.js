@@ -5,6 +5,7 @@ const db = require('../src/db');
 
 const PORT = process.env.PORT || 3001;
 const baseUrl = `http://localhost:${PORT}`;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
 
 let authCookie = '';
 let testPageId = null;
@@ -47,10 +48,11 @@ test('2. Public SSR rendering - Home Page', async () => {
 });
 
 test('3. Admin Login Failure (Invalid Credentials)', async () => {
+  const wrongPassword = ADMIN_PASSWORD === 'wrongpassword' ? 'differentpassword' : 'wrongpassword';
   const res = await fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: 'admin', password: 'wrongpassword' })
+    body: JSON.stringify({ username: 'admin', password: wrongPassword })
   });
   
   assert.strictEqual(res.status, 401);
@@ -62,7 +64,7 @@ test('4. Admin Login Success & Cookie Generation', async () => {
   const res = await fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: 'admin', password: 'admin' })
+    body: JSON.stringify({ username: 'admin', password: ADMIN_PASSWORD })
   });
   
   assert.strictEqual(res.status, 200);

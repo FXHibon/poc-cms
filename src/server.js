@@ -724,8 +724,20 @@ app.use(loadSettings, (req, res) => {
 });
 
 // Start the server
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
   console.log(`NovaCMS backend running on port ${PORT}`);
+
+  try {
+    const adminRes = await db.query("SELECT password_hash FROM users WHERE username = 'admin'");
+    if (adminRes.rows.length > 0) {
+      const isDefault = bcrypt.compareSync('admin', adminRes.rows[0].password_hash);
+      if (isDefault) {
+        console.warn('WARN: Using the default admin password');
+      }
+    }
+  } catch (err) {
+    // Database might not be initialized yet or table doesn't exist
+  }
 });
 
 module.exports = { app, server };

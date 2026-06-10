@@ -47,6 +47,7 @@ To run this application locally, you will need:
    PORT=3000
    DATABASE_URL=postgresql://your_user:your_password@localhost:5432/your_database_name
    JWT_SECRET=your_custom_development_secret_key
+   ADMIN_PASSWORD=your_custom_admin_password_here
    ```
 3. Initialize the database schema and seed default settings:
    ```bash

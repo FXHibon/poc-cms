@@ -11,6 +11,7 @@ services:
       - DATABASE_URL=postgres://test_user:test_password@db:5432/test_db
       - JWT_SECRET=novacms-test-key-0987654321
       - PORT=3001
+      - ADMIN_PASSWORD
     depends_on:
       db:
         condition: service_healthy

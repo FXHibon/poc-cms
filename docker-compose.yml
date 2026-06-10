@@ -11,6 +11,7 @@ services:
       - PORT=3000
       - DATABASE_URL=postgres://postgres:postgres@db:5432/novacms
       - JWT_SECRET=novacms-super-secret-development-key-987654
+      - ADMIN_PASSWORD
     depends_on:
       db:
         condition: service_healthy

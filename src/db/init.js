@@ -18,7 +18,13 @@ async function initializeDatabase() {
     if (res.rows.length === 0) {
       // Create default admin user
       const defaultUsername = 'admin';
-      const defaultPassword = 'admin';
+      const defaultPassword = process.env.ADMIN_PASSWORD || 'admin';
+      const isDefault = defaultPassword === 'admin';
+
+      if (isDefault) {
+        console.warn('WARN: Using the default admin password');
+      }
+
       const passwordHash = bcrypt.hashSync(defaultPassword, 10);
 
       await db.query(
@@ -28,7 +34,11 @@ async function initializeDatabase() {
       console.log('--------------------------------------------------');
       console.log('Default Administrator Created:');
       console.log(`Username: ${defaultUsername}`);
-      console.log(`Password: ${defaultPassword}`);
+      if (isDefault) {
+        console.log('Password: [DEFAULT]');
+      } else {
+        console.log(`Password: ${defaultPassword}`);
+      }
       console.log('--------------------------------------------------');
     } else {
       console.log('Administrator user already exists.');
