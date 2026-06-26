@@ -1,6 +1,6 @@
 {
   "name": "nova-cms",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "description": "A simple, premium Joomla/WordPress style CMS built with Node.js, Express, EJS, and PostgreSQL.",
   "main": "src/server.js",
   "scripts": {
